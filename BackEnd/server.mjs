@@ -42,6 +42,9 @@ app.use('/api/tours', tourRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/photos', photoRoutes);
 
+
+
+
 const PORT = process.env.PORT || 3000;
 
 // Pagrindinis maršrutas testavimui

@@ -10,6 +10,8 @@ const ToursPage = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editingTour, setEditingTour] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,6 +67,11 @@ const ToursPage = () => {
     }
   };
 
+  // Paginacija
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const displayedTours = tours.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.ceil(tours.length / itemsPerPage);
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="bg-white rounded shadow p-6">
@@ -74,7 +81,7 @@ const ToursPage = () => {
           </h2>
           <button
             onClick={() => {
-              setEditingTour(null); // kuriant naują
+              setEditingTour(null);
               setShowModal(true);
             }}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -86,64 +93,109 @@ const ToursPage = () => {
         {error && <div className="text-red-500 mb-4 font-medium">{error}</div>}
 
         {!loading && tours.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto border">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="p-2 border">Pavadinimas</th>
-                  <th className="p-2 border">Aprašymas</th>
-                  <th className="p-2 border">Kaina (€)</th>
-                  <th className="p-2 border">Trukmė</th>
-                  <th className="p-2 border">Data</th>
-                  <th className="p-2 border">Nuotrauka</th>
-                  <th className="p-2 border">Veiksmai</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tours.map((tour) => (
-                  <tr key={tour.id}>
-                    <td className="p-2 border">{tour.title}</td>
-                    <td className="p-2 border">{tour.description}</td>
-                    <td className="p-2 border">{tour.price}</td>
-                    <td className="p-2 border">
-                      {typeof tour.duration === "object"
-                        ? JSON.stringify(tour.duration)
-                        : tour.duration}
-                    </td>
-
-                    <td className="p-2 border">
-                      {new Date(tour.date).toLocaleDateString()}
-                    </td>
-                    <td className="p-2 border">
-                      {tour.photo_url ? (
-                        <img
-                          src={tour.photo_url}
-                          alt="Nuotrauka"
-                          className="h-16 object-cover rounded"
-                        />
-                      ) : (
-                        <span>Be nuotraukos</span>
-                      )}
-                    </td>
-                    <td className="p-2 border">
-                      <button
-                        onClick={() => handleEditTour(tour)}
-                        className="bg-yellow-500 text-white px-2 py-1 text-sm rounded mr-2"
-                      >
-                        ✏️ Redaguoti
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTour(tour.id)}
-                        className="bg-red-600 text-white px-2 py-1 text-sm rounded"
-                      >
-                        🗑️ Ištrinti
-                      </button>
-                    </td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto border">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="p-2 border">ID</th>
+                    <th className="p-2 border">Pavadinimas</th>
+                    <th className="p-2 border">Aprašymas</th>
+                    <th className="p-2 border">Kaina (€)</th>
+                    <th className="p-2 border">Trukmė</th>
+                    <th className="p-2 border">Data</th>
+                    <th className="p-2 border">Nuotrauka</th>
+                    <th className="p-2 border">Veiksmai</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {displayedTours.map((tour) => (
+                    <tr key={tour.id}>
+                      <td className="p-2 border">{tour.id}</td>
+                      <td className="p-2 border">{tour.title}</td>
+                      <td className="p-2 border">{tour.description}</td>
+                      <td className="p-2 border">{tour.price}</td>
+                      <td className="p-2 border">
+                        {typeof tour.duration === "object"
+                          ? JSON.stringify(tour.duration)
+                          : tour.duration}
+                      </td>
+                      <td className="p-2 border">
+                        {new Date(tour.date).toLocaleDateString()}
+                      </td>
+                      <td className="p-2 border">
+                        {tour.photo_url ? (
+                          <img
+                            src={tour.photo_url}
+                            alt="Nuotrauka"
+                            className="h-16 object-cover rounded"
+                          />
+                        ) : (
+                          <span>Be nuotraukos</span>
+                        )}
+                      </td>
+                      <td className="p-2 border">
+                        <button
+                          onClick={() => handleEditTour(tour)}
+                          className="bg-yellow-500 text-white px-2 py-1 text-sm rounded mr-2"
+                        >
+                          ✏️ Redaguoti
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTour(tour.id)}
+                          className="bg-red-600 text-white px-2 py-1 text-sm rounded"
+                        >
+                          🗑️ Ištrinti
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Paginacija */}
+            <div className="mt-4 flex justify-between items-center">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                ⬅️ Atgal
+              </button>
+              <span>
+                Puslapis {currentPage} iš {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    startIndex + itemsPerPage < tours.length ? prev + 1 : prev
+                  )
+                }
+                disabled={startIndex + itemsPerPage >= tours.length}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                Pirmyn ➡️
+              </button>
+            </div>
+
+            {/* Puslapių numeriai */}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === i + 1
+                      ? "bg-blue-700 text-white"
+                      : "bg-gray-200"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {showModal && (
